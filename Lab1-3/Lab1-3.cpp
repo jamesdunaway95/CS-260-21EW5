@@ -1,6 +1,7 @@
 //============================================================================
 // Name        : Lab1-3.cpp
-// Author      : Your Name
+// Author      : James Dunaway
+// Course      : CS-260-T5434 Data Structures and Algorithms
 // Version     : 1.0
 // Copyright   : Copyright © 2017 SNHU COCE
 // Description : Lab 1-3 Up to Speed in C++
@@ -15,8 +16,16 @@ using namespace std;
 // Global definitions visible to all methods and classes
 //============================================================================
 
+// Forward declarations
+double strToDouble(string str, char ch);
+
 // FIXME (1): Define a data structure to hold bid information together as a single unit of storage.
-?type?
+struct Bid {
+	string title;
+	string fund;
+	string vehicleId;
+	double amount;
+};
 
 // FIXME (4): Display the bid values passed in data structure
 /**
@@ -24,11 +33,11 @@ using namespace std;
  *
  * @param ?type? data structure containing the bid info
  */
-void displayBid(?type? ?variable?) {
-    cout << "Title: " << ?variable? << endl;
-    cout << "Fund: " << ?variable? << endl;
-    cout << "Vehicle: " << ?variable? << endl;
-    cout << "Bid Amount: " << ?variable? << endl;
+void displayBid(Bid bid) {
+    cout << "Title: " << bid.title << endl;
+    cout << "Fund: " << bid.fund << endl;
+    cout << "Vehicle: " << bid.vehicleId << endl;
+    cout << "Bid Amount: " << bid.amount << endl;
 
     return;
 }
@@ -39,27 +48,27 @@ void displayBid(?type? ?variable?) {
  *
  * @return data structure containing the bid info
  */
-?retval? getBid() {
-    ?type? ?variable?;
+Bid getBid() {
+    Bid newBid;
 
     cout << "Enter title: ";
     cin.ignore();
-    getline(cin, ?variable?);
+    getline(cin, newBid.title);
 
     cout << "Enter fund: ";
-    cin >> ?variable?;
+    cin >> newBid.fund;
 
     cout << "Enter vehicle: ";
     cin.ignore();
-    getline(cin, ?variable?);
+    getline(cin, newBid.vehicleId);
 
     cout << "Enter amount: ";
     cin.ignore();
     string strAmount;
     getline(cin, strAmount);
-    ?variable? = strToDouble(strAmount, '$');
+    newBid.amount = strToDouble(strAmount, '$');
 
-    return ?retval?;
+    return newBid;
 }
 
 /**
@@ -82,7 +91,7 @@ double strToDouble(string str, char ch) {
 int main() {
 
     // FIXME (2): Declare instance of data structure to hold bid information
-	?type? ?variable?
+	Bid bid;
 
     // loop to display menu until exit chosen
     int choice = 0;
@@ -97,10 +106,10 @@ int main() {
         // FIXME (5): Complete the method calls then test the program
         switch (choice) {
             case 1:
-            	?variable? = getBid();
+            	bid = getBid();
                 break;
             case 2:
-                displayBid(?variable?);
+                displayBid(bid);
                 break;
         }
     }
