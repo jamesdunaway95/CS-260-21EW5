@@ -1,6 +1,7 @@
 //============================================================================
 // Name        : Lab2-2.cpp
-// Author      : Your Name
+// Author      : James Dunaway
+// Course      : CS-260-T5434 Data Structures and Algorithms
 // Version     : 1.0
 // Copyright   : Copyright © 2017 SNHU COCE
 // Description : Lab 2-2 Up to Speed in C++, Part 2
@@ -11,6 +12,7 @@
 #include <time.h>
 
 // FIXME (1): Reference the CSVParser library
+#include "CSVparser.hpp" // Including csvparser (not header) according to github repository
 
 using namespace std;
 
@@ -74,19 +76,24 @@ Bid getBid() {
  * @param csvPath the path to the CSV file to load
  * @return a container holding all the bids read
  */
-?retval? loadBids(string csvPath) {
+vector<Bid> loadBids(string csvPath) {
 	// FIXME (2): Define a vector data structure to hold a collection of bids.
-
-    ?type? ?variable?;
+	vector<Bid> bids; // A vector of Bids using the bid struct created in the previous lab.
 
     // initialize the CSV Parser using the given path
     csv::Parser file = csv::Parser(csvPath);
 
-	// loop to read rows of a CSV file
-	for (int i = 0; i < file.rowCount(); i++) {
+	// loop to read rows of a CSV file and assign the appropriate values.
+	for (unsigned int i = 0; i < file.rowCount(); i++) {
         // FIXME (3): create a data structure to hold data from each row and add to vector
+		Bid bid;
+		bid.title = file[i][0];
+		bid.fund = file[i][8];
+		bid.amount = strToDouble(file[i][4], '$');
+
+		bids.push_back(bid);
     }
-    return ?variable?;
+    return bids;
 }
 
 /**
@@ -118,10 +125,10 @@ int main(int argc, char* argv[]) {
     }
 
     // FIXME (4): Define a vector to hold all the bids
-    ?type? ?variable?;
+    vector<Bid> bids; // Temporary vector of bid structs created in last lab.
 
     // FIXME (7a): Define a timer variable
-    ?type? ?variable?;
+    clock_t ticks; // From primmer document.
 
     int choice = 0;
     while (choice != 9) {
@@ -140,16 +147,22 @@ int main(int argc, char* argv[]) {
             break;
         case 2:
             // FIXME (7b): Initialize a timer variable before loading bids
+        	ticks = clock(); // From primmer document.
 
             // FIXME (5): Complete the method call to load the bids
+        	bids = loadBids(csvPath);
 
             // FIXME (7c): Calculate elapsed time and display result
-
+        	// From primmer document.
+        	ticks = clock() - ticks;
+        	cout << "time: " << ticks << " milliseconds" << endl;
+        	cout << "time: " << ticks * (1.0/CLOCKS_PER_SEC) << " seconds" << endl;
             break;
         case 3:
             // FIXME (6): Loop and display the bids read
-            for (int i = 0; i < ?variable?.?length?; ++i) {
-            	displayBid(?variable?);
+        	// Loops through each bid at i index and runs the displayBid function from the previous lab.
+            for (unsigned int i = 0; i < bids.size(); ++i) {
+            	displayBid(bids.at(i));
             }
             cout << endl;
 
