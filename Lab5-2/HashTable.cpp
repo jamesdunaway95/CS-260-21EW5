@@ -1,6 +1,7 @@
 //============================================================================
 // Name        : HashTable.cpp
-// Author      : John Watson
+// Author      : James Dunaway
+// Course      : CS-260-T5434 Data Structures and Algorithms
 // Version     : 1.0
 // Copyright   : Copyright © 2017 SNHU COCE
 // Description : Hello World in C++, Ansi-style
@@ -48,11 +49,36 @@ class HashTable {
 
 private:
     // FIXME (1): Define structures to hold bids
+	// New node struct for utilizing chaining with the hashtable.
+	struct Node {
+		Bid bid;
+		unsigned key;
+		Node* next;
 
+		// Default constructor
+		Node() {
+			// Sets default key to infinity and next pointer to null.
+			key = UINT_MAX;
+			next = nullptr;
+		}
+
+		Node(Bid someBid) : Node() {
+			bid = someBid;
+		}
+
+		Node(Bid someBid, unsigned someKey) : Node(someBid) {
+			key = someKey;
+		}
+	};
+
+	// Node vector for chaining alongside table size variable for dynamic table sizing.
+	vector<Node> nodes;
+	unsigned hashTableSize = DEFAULT_SIZE;
     unsigned int hash(int key);
 
 public:
     HashTable();
+    HashTable(unsigned size);
     virtual ~HashTable();
     void Insert(Bid bid);
     void PrintAll();
@@ -65,6 +91,12 @@ public:
  */
 HashTable::HashTable() {
     // FIXME (2): Initialize the structures used to hold bids
+	nodes.resize(hashTableSize);
+}
+
+// Secondary constructor
+HashTable::HashTable(unsigned size) {
+	this->hashTableSize = size;
 }
 
 /**
@@ -72,6 +104,7 @@ HashTable::HashTable() {
  */
 HashTable::~HashTable() {
     // FIXME (3): Implement logic to free storage when class is destroyed
+	nodes.erase(nodes.begin());
 }
 
 /**
@@ -85,6 +118,7 @@ HashTable::~HashTable() {
  */
 unsigned int HashTable::hash(int key) {
     // FIXME (4): Implement logic to calculate a hash value
+	return key % hashTableSize;
 }
 
 /**
@@ -94,13 +128,30 @@ unsigned int HashTable::hash(int key) {
  */
 void HashTable::Insert(Bid bid) {
     // FIXME (5): Implement logic to insert a bid
-}
+	// Convert bidid to an interger.
+	unsigned key = hash(atoi(bid.bidId.c_str()));
 
-/**
- * Print all bids
- */
-void HashTable::PrintAll() {
-    // FIXME (6): Implement logic to print all bids
+	// Attempt to retrieve node using the key
+	Node* oldNode = &(nodes.at(key));
+
+	// If there is no node
+	if (oldNode == nullptr) {
+		Node* newNode = new Node(bid, key);
+		nodes.insert(nodes.begin() + key, (*newNode));
+	} else {
+		if (oldNode->key == UINT_MAX) {
+			// If node is found and has never been used.
+			oldNode->key = key;
+			oldNode->bid = bid;
+			oldNode->next = nullptr;
+		} else {
+			// if node is found and has been used
+			while(oldNode->next != nullptr) {
+				oldNode = oldNode->next;
+			}
+			oldNode->next = new Node(bid, key);
+		}
+	}
 }
 
 /**
@@ -110,6 +161,10 @@ void HashTable::PrintAll() {
  */
 void HashTable::Remove(string bidId) {
     // FIXME (7): Implement logic to remove a bid
+	// Convert bidid to an interger.
+	unsigned key = hash(atoi(bidId.c_str()));
+
+	nodes.erase(nodes.begin() + key);
 }
 
 /**
@@ -121,6 +176,30 @@ Bid HashTable::Search(string bidId) {
     Bid bid;
 
     // FIXME (8): Implement logic to search for and return a bid
+	// Convert bidid to an interger.
+	unsigned key = hash(atoi(bidId.c_str()));
+
+	// Attempt to retrieve node using the key
+	Node* node = &(nodes.at(key));
+
+	// Node is not found
+	if (node == nullptr || node->key == UINT_MAX) {
+		return bid;
+	}
+
+	// Node is found and matches searched bid
+	if (node != nullptr && node->key != UINT_MAX && node->bid.bidId.compare(bidId) == 0) {
+		return node->bid;
+	}
+
+	// if none of the above, walk through the list
+	while (node != nullptr) {
+		if (node->key != UINT_MAX && node->bid.bidId.compare(bidId) == 0) {
+			return node->bid;
+		}
+		node = node->next;
+	}
+
 
     return bid;
 }
@@ -138,6 +217,24 @@ void displayBid(Bid bid) {
     cout << bid.bidId << ": " << bid.title << " | " << bid.amount << " | "
             << bid.fund << endl;
     return;
+}
+
+/**
+ * Print all bids
+ */
+void HashTable::PrintAll() {
+    // FIXME (6): Implement logic to print all bids
+	unsigned int i = 0;
+
+	// Iterate through the loop
+	while (i < nodes.size())
+	{
+		// Call display bid for each bid
+		displayBid(nodes[i].bid);
+
+		// Increment
+		++i;
+	}
 }
 
 /**
@@ -199,19 +296,19 @@ double strToDouble(string str, char ch) {
 int main(int argc, char* argv[]) {
 
     // process command line arguments
-    string csvPath, bidKey;
+    string csvPath, searchValue;
     switch (argc) {
     case 2:
         csvPath = argv[1];
-        bidKey = "98109";
+        searchValue = "98019";
         break;
     case 3:
         csvPath = argv[1];
-        bidKey = argv[2];
+        searchValue = argv[2];
         break;
     default:
         csvPath = "eBid_Monthly_Sales_Dec_2016.csv";
-        bidKey = "98109";
+        searchValue = "98019";
     }
 
     // Define a timer variable
@@ -257,14 +354,14 @@ int main(int argc, char* argv[]) {
         case 3:
             ticks = clock();
 
-            bid = bidTable->Search(bidKey);
+            bid = bidTable->Search(searchValue);
 
             ticks = clock() - ticks; // current clock ticks minus starting clock ticks
 
             if (!bid.bidId.empty()) {
                 displayBid(bid);
             } else {
-                cout << "Bid Id " << bidKey << " not found." << endl;
+                cout << "Bid Id " << searchValue << " not found." << endl;
             }
 
             cout << "time: " << ticks << " clock ticks" << endl;
@@ -272,7 +369,7 @@ int main(int argc, char* argv[]) {
             break;
 
         case 4:
-            bidTable->Remove(bidKey);
+            bidTable->Remove(searchValue);
             break;
         }
     }
