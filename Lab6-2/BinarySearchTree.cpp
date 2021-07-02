@@ -1,6 +1,7 @@
 //============================================================================
 // Name        : BinarySearchTree.cpp
-// Author      : JYour name
+// Author      : James Dunaway
+// Course      : CS-260-T5434 Data Structures and Algorithms
 // Version     : 1.0
 // Copyright   : Copyright © 2017 SNHU COCE
 // Description : Hello World in C++, Ansi-style
@@ -8,6 +9,7 @@
 
 #include <iostream>
 #include <time.h>
+#include <algorithm>
 
 #include "CSVparser.hpp"
 
@@ -33,6 +35,21 @@ struct Bid {
 
 // FIXME (1): Internal structure for tree node
 struct Node {
+	Bid bid;
+	Node *left;
+	Node *right;
+
+	//Default constructor
+	Node() {
+		left = nullptr;
+		right = nullptr;
+	}
+
+	// Default + bid constructor
+	Node(Bid someBid) : Node() {
+		this->bid = someBid;
+	}
+
 };
 
 //============================================================================
@@ -66,6 +83,7 @@ public:
  */
 BinarySearchTree::BinarySearchTree() {
     // initialize housekeeping variables
+	root = nullptr;
 }
 
 /**
@@ -79,12 +97,19 @@ BinarySearchTree::~BinarySearchTree() {
  * Traverse the tree in order
  */
 void BinarySearchTree::InOrder() {
+	this->inOrder(root);
 }
 /**
  * Insert a bid
  */
 void BinarySearchTree::Insert(Bid bid) {
     // FIXME (2a) Implement inserting a bid into the tree
+	// If root is empty, make root a new node else run addNode()
+	if (root == nullptr) {
+		root = new Node(bid);
+	} else {
+		addNode(root, bid);
+	}
 }
 
 /**
@@ -92,6 +117,8 @@ void BinarySearchTree::Insert(Bid bid) {
  */
 void BinarySearchTree::Remove(string bidId) {
     // FIXME (4a) Implement removing a bid from the tree
+	// Call private method removeNode() with specified ID.
+	this->removeNode(root, bidId);
 }
 
 /**
@@ -99,6 +126,21 @@ void BinarySearchTree::Remove(string bidId) {
  */
 Bid BinarySearchTree::Search(string bidId) {
     // FIXME (3) Implement searching the tree for a bid
+	Node *currNode = root;
+
+	// While loop through tree until match or bottom is found
+	while (currNode != nullptr) {
+		// If current node matches target, return current node
+		if (currNode->bid.bidId.compare(bidId) == 0) {
+			return currNode->bid;
+		// if current node is smaller search left tree
+		} else if (bidId.compare(currNode->bid.bidId) < 0) {
+			currNode = currNode->left;
+		// If current node is larger, search right tree
+		} else {
+			currNode = currNode->right;
+		}
+	}
 
 	Bid bid;
     return bid;
@@ -112,8 +154,71 @@ Bid BinarySearchTree::Search(string bidId) {
  */
 void BinarySearchTree::addNode(Node* node, Bid bid) {
     // FIXME (2b) Implement inserting a bid into the tree
+	// If node is larger than current node, go to left tree
+	if (node->bid.bidId.compare(bid.bidId) > 0) {
+		// If no left node, create one, else recursive call until a spot is found.
+		if (node->left == nullptr) {
+			node->left = new Node(bid);
+		} else {
+			this->addNode(node->left, bid);
+		}
+	} else { // Go to right tree
+		if (node->right == nullptr) {
+			node->right = new Node(bid);
+		} else {
+			this->addNode(node->right, bid);
+		}
+	}
 }
+
 void BinarySearchTree::inOrder(Node* node) {
+	// Recursive call through function as long as node is not null, printing info along the way.
+	if (node != nullptr) {
+		inOrder(node->left);
+	    cout << node->bid.bidId << ": " << node->bid.title << " | " << node->bid.amount << " | "
+	            << node->bid.fund << endl;
+		inOrder(node->right);
+	}
+}
+
+Node* BinarySearchTree::removeNode(Node* node, string bidId){
+	// If tree is empty, return
+	if (node == nullptr) return node;
+
+	// if id is smaller, recursive call through left tree
+	if (bidId.compare(node->bid.bidId) < 0) {
+		node->left = removeNode(node->left, bidId);
+	// if id is larger, recursive call through right tree
+	} else if (bidId.compare(node->bid.bidId) > 0) {
+		node->right = removeNode(node->right, bidId);
+	// else we found the bid
+	} else {
+		// Case: No children found on node
+		if (node->left == nullptr && node->right == nullptr) {
+			delete node;
+			node = nullptr;
+		// Case: Child on left is found on node
+		} else if (node->left != nullptr && node->right == nullptr) {
+			Node *temp = node;
+			node = node->left;
+			delete temp;
+		// Case: Child on right is found on node
+		} else if (node->left == nullptr && node->right != nullptr) {
+			Node *temp = node;
+			node = node->right;
+			delete temp;
+		// Case: Child is found on both sides
+		} else {
+			Node *temp = node->right;
+			while (temp->left != nullptr) {
+				temp = temp->left;
+			}
+			//
+			node->bid = temp->bid;
+			node->right = removeNode(node->right, temp->bid.bidId);
+		}
+	}
+	return node;
 }
 //============================================================================
 // Static methods used for testing
