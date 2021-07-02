@@ -1,6 +1,7 @@
 //============================================================================
 // Name        : LinkedList.cpp
-// Author      : Your Name
+// Author      : James Dunaway
+// Course      : CS-260-T5434 Data Structures and Algorithms
 // Version     : 1.0
 // Copyright   : Copyright © 2017 SNHU COCE
 // Description : Lab 3-3 Lists and Searching
@@ -44,6 +45,27 @@ class LinkedList {
 
 private:
     // FIXME (1): Internal structure for list entries, housekeeping variables
+	// Added a node struct that takes a bid object, and a node point for the
+	// next item in the list and a head.
+	struct Node {
+		Bid bid;
+		Node *next;
+
+		// default constructor
+		Node() {
+			next = nullptr;
+		}
+
+		// Constructor with bid
+		Node(Bid eBid) {
+			bid = eBid;
+			next = nullptr;
+		}
+	};
+
+	Node *head;
+	Node *tail;
+	int size = 0;
 
 public:
     LinkedList();
@@ -61,6 +83,9 @@ public:
  */
 LinkedList::LinkedList() {
     // FIXME (2): Initialize housekeeping variables
+	// Head is set to null as a new list will be empty.
+	head = nullptr;
+	tail = nullptr;
 }
 
 /**
@@ -74,6 +99,19 @@ LinkedList::~LinkedList() {
  */
 void LinkedList::Append(Bid bid) {
     // FIXME (3): Implement append logic
+	Node *node = new Node(bid);
+
+	// If the list is empty the node new becomes the head and tail, else it becomes the tail.
+	if (head == nullptr) {
+		head = node;
+		tail = node;
+	} else {
+		if (tail != nullptr) {
+			tail->next = node;
+		}
+	}
+	tail = node;
+	size++;
 }
 
 /**
@@ -81,6 +119,14 @@ void LinkedList::Append(Bid bid) {
  */
 void LinkedList::Prepend(Bid bid) {
     // FIXME (4): Implement prepend logic
+	Node *node = new Node(bid);
+
+	// if head already exists, this node becomes the head, head moves to the next node.
+	if (head != nullptr) {
+		node->next = head;
+	}
+	head = node;
+	size++;
 }
 
 /**
@@ -88,6 +134,14 @@ void LinkedList::Prepend(Bid bid) {
  */
 void LinkedList::PrintList() {
     // FIXME (5): Implement print logic
+	Node *currNode = head;
+
+	// Loop through list and print bid info as long as the head is not null.
+	while (currNode != nullptr) {
+		cout << currNode->bid.bidId << ": " << currNode->bid.title << " | "
+			 << currNode->bid.amount << " | " << currNode->bid.fund << endl;
+		currNode = currNode->next;
+	}
 }
 
 /**
@@ -97,6 +151,32 @@ void LinkedList::PrintList() {
  */
 void LinkedList::Remove(string bidId) {
     // FIXME (6): Implement remove logic
+	// If head is not null and is the removal bid. Remove the head and set it to null.
+	if (head != nullptr) {
+		if (head->bid.bidId.compare(bidId) == 0) {
+			// Save the 2nd node to a temp node, delete the head, and replace it with temp.
+			Node *tempNode = head->next;
+			delete head;
+			head = tempNode;
+		}
+	}
+
+	Node *currNode = head;
+
+	// Loop through list (after head node)
+	while (currNode->next != nullptr) {
+		if (currNode->next->bid.bidId.compare(bidId) == 0) {
+			// Save the ->next node to a temp node.
+			Node *tempNode = currNode->next;
+
+			// Move currNode forward and delete the temp node and reduce the list size.
+			currNode->next = tempNode->next;
+			delete tempNode;
+			size--;
+
+			return;
+		}
+	}
 }
 
 /**
@@ -106,6 +186,15 @@ void LinkedList::Remove(string bidId) {
  */
 Bid LinkedList::Search(string bidId) {
     // FIXME (7): Implement search logic
+	Node *currNode = head;
+
+	// Loop through list and print bid info as long as the head is not null.
+	while (currNode != nullptr) {
+		if (currNode->bid.bidId.compare(bidId) == 0) {
+			return currNode->bid;
+		}
+		currNode = currNode->next;
+	}
 }
 
 /**
@@ -170,7 +259,7 @@ void loadBids(string csvPath, LinkedList *list) {
 
     try {
         // loop to read rows of a CSV file
-        for (int i = 0; i < file.rowCount(); i++) {
+        for (unsigned int i = 0; i < file.rowCount(); i++) {
 
             // initialize a bid using data from current row (i)
             Bid bid;
